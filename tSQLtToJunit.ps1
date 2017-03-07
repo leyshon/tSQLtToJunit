@@ -31,7 +31,7 @@ Function Get-FailureMsg {
 Function Out-JunitXml {
     [cmdletbinding()]
     param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]$Results,
+        [Parameter(Mandatory=$true)]$Results,
         $SaveTo
     )
     $Template = [XML] @"
@@ -111,7 +111,8 @@ Function Invoke-Tsqlt {
         $Sql.Add($S.Message) > $null
     }
     Write-Verbose ($Sql | Out-String)
-    Get-TestCases -Results $Sql | Out-JunitXml -SaveTo $OutFile
+    $Tests = Get-TestCases -Results $Sql 
+    Out-JunitXml -Results $Tests -SaveTo $OutFile
 }
 
 
