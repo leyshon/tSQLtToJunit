@@ -1,6 +1,7 @@
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
 . "$Here\$Sut"
+Import-Module "$here\..\tSQLtToJunit.psm1"
 
 $ResultString = @"
 Running Invoke-Sqlcmd2 with ParameterSet 'Ins-Que'.  Performing query 'exec tsqlt.RunAll'
@@ -33,22 +34,6 @@ SQL Error:  Test Case Summary: 11 test case(s) executed, 9 succeeded, 2 failed, 
 ------------------------------------------------------------------------------
 "@
 
-Describe "Get-FailureMsg" {
-    $Results = $ResultString.Split("`n").TrimEnd("`r")
-    It "returns the message for the correct test" {
-        $TestName = "[AcceleratorTests].[test ready for experimentation if 2 particles]"
-        Get-FailureMsg -TestName $TestName -Results $Results | Should be "Expected: <1> but was: <0>"
-    }
-    It "returns the message when it is split across multiple lines" {
-        $TestName = "[AcceleratorTests].[test status message includes the number of particles]"
-        Get-FailureMsg -TestName $TestName -Results $Results | Should be "Expected: <The Accelerator is prepared with 3 particles. HAHA> but was : <The Accelerator is prepared with 3 particles.>"
-    }
-    It "returns no text when the test was a success" {
-        $TestName = "[AcceleratorTests].[test we are not ready for experimentation if there is only 1 particle]"
-        Get-FailureMsg -TestName $TestName -Results $Results | Should be $null
-    }
-}
-
 Describe "Out-JunitXml" {
     $Results = $ResultString.Split("`n").TrimEnd("`r")
     $Results = Get-TestCases -Results $Results
@@ -69,33 +54,3 @@ Describe "Out-JunitXml" {
         (Out-JunitXml -Results $Results).TestSuites.TestSuite.TestCase.Classname | Should be "[AcceleratorTests]"
     }
 }
-
-Describe "Get-TestCases" {
-    $Output = $ResultString.Split("`n").TrimEnd("`r")
-    $Results = @()
-    Foreach ($Out in $Output) {
-        $Results += $Out
-    }
-    $arrayValues = "id", "name", "duration", "result"
-    It "The first entry is the first test case" {
-        (Get-TestCases -Results $Results)[0].Test | Should be "[test a particle is included only if it fits inside the boundaries of the rectangle]"
-    }
-    It "The last entry is the last test case" {
-        (Get-TestCases -Results $Results)[-1].Test | Should be "[test status message includes the number of particles]"
-    }
-    It "Should return the schema as the class" {
-        (Get-TestCases -Results $Results).Class | Should be "[AcceleratorTests]"
-    }
-    It "Returns id, test, duration, result, reason and class in the noteproperties" {
-        $Array = (((Get-TestCases -Results $Results) | Get-Member | ? {$_.MemberType -eq "NoteProperty"}).name)  
-        $Array -contains "id" | Should be $true
-        $Array -contains "test" | Should be $true
-        $Array -contains "time" | Should be $true
-        $Array -contains "result" | Should be $true
-        $Array -contains "reason" | Should be $true
-        $Array -contains "class" | Should be $true
-    }
-    It "contains a reason for failures" {
-        (Get-TestCases -Results $Results)[9].reason | Should be "Expected: <1> but was: <0>"
-    }
-} 
