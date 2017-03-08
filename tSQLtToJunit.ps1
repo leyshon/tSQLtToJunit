@@ -5,8 +5,11 @@ Function Get-FailureMsg {
         $Results
     )
     
-    # Have to escape the [ character in the test name
+    # Escape regex characters to make them literals
     $Test = $TestName.Replace('[','\[')
+    $Test = $Test.Replace('(','\(')
+    $Test = $Test.Replace(')','\)')
+    $Test = $Test.Replace('.','\.')
     $Match = "$Test failed:"
     Write-Verbose "Matching to $Match"
     $Failure = $Results | Select-String -Pattern $Match
@@ -28,6 +31,7 @@ Function Get-FailureMsg {
     }
 }
 
+# Heavily borrowed from http://merill.net/2013/06/creating-junitxunit-compatible-xml-test-tesults-in-powershell/
 Function Out-JunitXml {
     [cmdletbinding()]
     param(
@@ -74,9 +78,15 @@ Function Get-TestCases {
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]$Results
     )
     
-    $Start = $Results.IndexOf("|No|Test Case Name                                                                                            |Dur(ms)|Result |")
+    $HeaderRegex = "\|No\|Test Case Name.*\|Dur\(ms\)\|Result \|"
+    $Header = $Results -match $HeaderRegex
+    $Start = $Results.IndexOf("$Header")
     $Start += 2
-    $End = $Results.IndexOf("------------------------------------------------------------------------------")
+    $FooterRegex = "^---------*-$"
+    $Footer = ($Results -match $FooterRegex)[0]
+    #Write-Verbose $Footer
+    $End = $Results.IndexOf("$Footer")
+    Write-Verbose $End
 
     $Cases = @()
     for ($i=$Start; $i -lt $End; $i++){
