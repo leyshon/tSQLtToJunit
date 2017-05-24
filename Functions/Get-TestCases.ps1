@@ -27,7 +27,7 @@ Function Get-TestCases {
         $Test | Add-Member -Type NoteProperty -Name test -Value ($Case.Split("|")[2]).Split(".")[1].TrimEnd()
         $Test | Add-Member -Type NoteProperty -Name time -Value $Case.Split("|")[3].TrimStart()
         $Test | Add-Member -Type NoteProperty -Name result -Value $Case.Split("|")[4]
-        $Test | Add-Member -Type NoteProperty -Name reason -Value (Get-FailureMsg -TestName $Test.test -Results $Results)
+        $Test | Add-Member -Type NoteProperty -Name reason -Value (Get-FailureMsg -TestName "$($Test.class).$($Test.test)" -Results $Results)
         $TestCases += $Test
     }
     Return $TestCases
