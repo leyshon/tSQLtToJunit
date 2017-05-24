@@ -9,7 +9,11 @@ Querying ServerInstance '(local)'
 [AcceleratorTests].[test status message includes the number of particles] failed: (Failure) 
 Expected: <The Accelerator is prepared with 3 particles. HAHA>
 but was : <The Accelerator is prepared with 3 particles.>
- 
+[AcceleratorTests].[test email is sent if we detected a higgs-boson] failed: (Failure) Expected:
+<1>
+
+but was: <5>
+
 +----------------------+
 |Test Execution Summary|
 +----------------------+
@@ -39,12 +43,17 @@ Describe "Get-FailureMsg" {
         $TestName = "[AcceleratorTests].[test ready for experimentation if 2 particles]"
         Get-FailureMsg -TestName $TestName -Results $Results | Should be "Expected: <1> but was: <0>"
     }
-    It "returns the message when it is split across multiple lines" {
+    It "returns the message when it is split across two lines" {
         $TestName = "[AcceleratorTests].[test status message includes the number of particles]"
         Get-FailureMsg -TestName $TestName -Results $Results | Should be "Expected: <The Accelerator is prepared with 3 particles. HAHA> but was : <The Accelerator is prepared with 3 particles.>"
+    }
+    It "returns the full message when it is split across multiple lines, including blank lines" {
+        $TestName = "[AcceleratorTests].[test email is sent if we detected a higgs-boson]"
+        Get-FailureMsg -TestName $TestName -Results $Results | Should be "Expected: <1> but was: <5>"
     }
     It "returns no text when the test was a success" {
         $TestName = "[AcceleratorTests].[test we are not ready for experimentation if there is only 1 particle]"
         Get-FailureMsg -TestName $TestName -Results $Results | Should be $null
     }
 }
+
