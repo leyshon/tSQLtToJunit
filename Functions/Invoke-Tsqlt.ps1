@@ -14,4 +14,6 @@ Function Invoke-Tsqlt {
     Write-Verbose ($Sql | Out-String)
     $Tests = Get-TestCases -Results $Sql 
     Out-JunitXml -Results $Tests -SaveTo $OutFile
+
+    return $Tests
 }
