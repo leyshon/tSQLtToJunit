@@ -49,7 +49,7 @@ Describe "Get-TestCases" {
         (Get-TestCases -Results $Results)[-1].Test | Should be "[test status message includes the number of particles]"
     }
     It "Should return the schema as the class" {
-        (Get-TestCases -Results $Results).Class | Should be "[AcceleratorTests]"
+        (Get-TestCases -Results $Results).Class[0] | Should be "[AcceleratorTests]"
     }
     It "Returns id, test, duration, result, reason and class in the noteproperties" {
         $Array = (((Get-TestCases -Results $Results) | Get-Member | ? {$_.MemberType -eq "NoteProperty"}).name)  
