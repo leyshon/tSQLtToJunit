@@ -6,10 +6,12 @@ Function Get-FailureMsg {
     )
     
     # Escape regex characters to make them literals
+    <#
     $Test = $TestName.Replace('[','\[')
     $Test = $Test.Replace('(','\(')
     $Test = $Test.Replace(')','\)')
     $Test = $Test.Replace('.','\.')
+    #>
     # "Querying ServerInstance" and "Test Execution Summary" bound the possible failure messages
     $FailureStartLine = (($Results | Select-String -Pattern "Querying ServerInstance *").LineNumber)
     $FailureEndLine = (($Results | Select-String -Pattern "\|Test Execution Summary\|").LineNumber) 
@@ -25,11 +27,17 @@ Function Get-FailureMsg {
 
     $FailureObj = @()
     foreach ($Line in $Lines) {
+        switch ($Split[$Line].Length)
+        {
+            {$_ -le 9} {$Reason = ($Split[$Line]).TrimStart().TrimEnd()}
+            {$_ -ge 10} {$Reason = ($Split[$Line].Substring($Split[$Line].LastIndexOf('(Failure)')+10)).TrimStart().TrimEnd()}
+        }
         $Fail = New-Object System.Object
         $Fail | Add-Member -Type NoteProperty -Name test -Value $Split[($Line -1)]
-        $Fail | Add-Member -Type NoteProperty -Name reason -Value ($Split[$Line].Substring($Split[$Line].LastIndexOf('(Failure)')+10)).TrimStart().TrimEnd()
+        $Fail | Add-Member -Type NoteProperty -Name reason -Value $Reason
         $FailureObj += $Fail
     }
 
-    return ($FailureObj | Where-Object {$_.test -eq $TestName}).reason
+    return $FailureObj
+    #return ($FailureObj | Where-Object {$_.test -eq $TestName}).reason
 }
