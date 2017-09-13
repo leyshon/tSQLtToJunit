@@ -28,7 +28,8 @@ but was : <The Accelerator is prepared with 3 particles.>
 |8 |[AcceleratorTests].[test no particles are in a rectangle when there are no particles in the table]        |    563|Success|
 |9 |[AcceleratorTests].[test we are not ready for experimentation if there is only 1 particle]                |    236|Success|
 |10|[AcceleratorTests].[test ready for experimentation if 2 particles]                                        |    234|Failure|
-|11|[AcceleratorTests].[test status message includes the number of particles]                                 |    263|Failure|
+|11|[AcceleratorTests].[test schema.storedprocedure has worked without splitting wrong]                       |    250|Success|
+|12|[AcceleratorTests].[test status message includes the number of particles]                                 |    263|Failure|
 ------------------------------------------------------------------------------
 Capture SQL Error
 SQL Error:  Test Case Summary: 11 test case(s) executed, 9 succeeded, 2 failed, 0 errored.
@@ -62,5 +63,8 @@ Describe "Get-TestCases" {
     }
     It "contains a reason for failures" {
         (Get-TestCases -Results $Results)[9].reason | Should be "Expected: <1> but was: <0>"
+    }
+    It "doesn't split the name of the test if someone includes a dot in it" {
+        (Get-TestCases -Results $Results)[10].Test | Should be "[test schema.storedprocedure has worked without splitting wrong]"
     }
 } 
